@@ -25,6 +25,9 @@
     
     <!-- JSON -->
     <PackageReference Include="System.Text.Json" Version="9.0.0" />
+
+    <!-- Allure -->
+    <PackageReference Include="Allure.NUnit" Version="2.12.1" />
   </ItemGroup>
 
   <ItemGroup>
