@@ -46,6 +46,7 @@ jobs:
       - name: Run tests (produce TRX)
         env:
           SELENIUM_REMOTE_URL: http://localhost:4444/wd/hub
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: dotnet test SeleniumSelfHealing.sln --configuration Release --no-build --logger "trx;LogFileName=test_results.trx"
 
       - name: Upload TRX test results
