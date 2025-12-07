@@ -26,8 +26,15 @@ public class LlmConfig
     /// Get from: https://platform.openai.com/api-keys
     /// Default: Empty (not needed for Ollama)
     /// Example: "sk-proj-abc123xyz..."
+    /// 
+    /// NOTE: In CI/CD, set OPENAI_API_KEY environment variable instead of putting key in appsettings.json
     /// </summary>
-    public string ApiKey { get; set; } = string.Empty;
+    private string _apiKey = string.Empty;
+    public string ApiKey
+    {
+        get => Environment.GetEnvironmentVariable("OPENAI_API_KEY") ?? _apiKey;
+        set => _apiKey = value;
+    }
 
     /// <summary>
     /// BASE URL: Where to send AI requests
@@ -62,4 +69,3 @@ public class LlmConfig
     /// </summary>
     public int MaxTokens { get; set; } = 1000;
 }
-
