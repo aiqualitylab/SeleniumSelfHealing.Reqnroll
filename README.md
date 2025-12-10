@@ -2,6 +2,8 @@
 
 A simple BDD test framework that uses **AI to automatically fix broken element locators**.
 
+![selenium-self-healing](https://github.com/user-attachments/assets/f4fe21a2-31db-4a0b-b4aa-961953a0c9ae)
+
 ## What Is This?
 
 One working test that demonstrates how AI can fix broken Selenium tests automatically. When an element locator fails, AI analyzes the page and suggests a new one!
