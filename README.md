@@ -274,8 +274,7 @@ dotnet clean && dotnet restore && dotnet build
 5. **Ready to Customize** - Build your own tests easily
 
 ## 🎯 What This Demonstrates
-
-✅ BDD testing with plain English scenarios  
+ 
 ✅ AI automatically fixing broken locators  
 ✅ No manual intervention needed  
 ✅ Tests that heal themselves  
