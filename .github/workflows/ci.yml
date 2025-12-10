@@ -43,29 +43,75 @@ jobs:
             sleep 2
           done
 
-      - name: Run tests
+      - name: Run Tests
+        id: test
         env:
           SELENIUM_REMOTE_URL: http://localhost:4444/wd/hub
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        run: dotnet test SeleniumSelfHealing.sln --configuration Release --no-build --logger "trx;LogFileName=test_results.trx"
+        run: |
+          dotnet test SeleniumSelfHealing.csproj \
+            --configuration Release \
+            --no-build \
+            --logger "trx;LogFileName=test_results.trx" \
+            --logger "console;verbosity=detailed" \
+            2>&1 | tee test_output.log
         continue-on-error: true
 
-      - name: Upload TRX test results
+      - name: AI - Analyze Failures
+        if: always()
+        id: ai_analysis
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          if [ ! -f test_output.log ]; then
+            echo "analysis=No test output found" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
+          LOGS=$(tail -200 test_output.log | sed 's/"/\\"/g' | tr '\n' ' ')
+          
+          RESPONSE=$(curl -s https://api.openai.com/v1/chat/completions \
+            -H "Authorization: Bearer $OPENAI_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"model\": \"gpt-4o-mini\",
+              \"messages\": [{
+                \"role\": \"user\",
+                \"content\": \"Analyze these test results. Provide a brief summary with: 1) Pass/Fail counts 2) Root cause of any failures 3) Suggested fixes. Keep it concise.\n\nLogs: $LOGS\"
+              }]
+            }")
+          
+          ANALYSIS=$(echo "$RESPONSE" | jq -r '.choices[0].message.content // "Analysis failed"')
+          
+          # Save to file for multi-line output
+          echo "$ANALYSIS" > ai_analysis.txt
+
+
+      - name: Upload TRX Results
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: test-results
           path: '**/test_results.trx'
 
+      - name: Upload Test Logs
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-logs
+          path: |
+            test_output.log
+            ai_analysis.txt
+
       - name: Install Allure
+        if: always()
         run: |
           wget -qO- https://github.com/allure-framework/allure2/releases/download/2.30.0/allure-2.30.0.tgz | tar xz
           echo "$PWD/allure-2.30.0/bin" >> $GITHUB_PATH
 
       - name: Generate Allure Report
         if: always()
-        run: |
-          allure generate **/allure-results --clean -o allure-report
+        run: allure generate **/allure-results --clean -o allure-report
 
       - name: Upload Allure Report
         uses: actions/upload-artifact@v4
