@@ -305,3 +305,30 @@ dotnet test --logger "console;verbosity=detailed"
 **Ready to see AI fix your tests automatically? Run it now! 🚀**
 
 For detailed explanations, check the commented code in `Utilities/` folder!
+
+## Advanced Self-Healing Concepts
+
+The current implementation uses the first locator the AI suggests. That works for one test, but in bigger suites you need to be more careful — a locator that works isn't always the right one. Some ideas to take it further:
+
+### Don't Trust the First Match
+- Don't just accept the first element that makes the test pass — it might be the wrong one
+- Ask the AI for a few ranked options instead of one
+- Pick the best one by checking:
+  - Does it match only one element?
+  - Does it use something stable like an `id` instead of a shaky XPath?
+  - Does it actually fit what we're looking for?
+
+### Use a Confidence Score
+- High confidence: fix it automatically
+- Medium confidence: fix it but flag it for a human to check
+- Low confidence: don't fix it, just show the options and let a human decide
+
+### Watch It at Scale
+- In big suites you can't check every fix by hand
+- Keep an eye on how many fixes get flagged
+- Watch for the same step getting fixed over and over — that usually means a weak locator
+
+### Make It a Feedback Loop
+- If a step keeps getting healed, fix the locator for real instead of healing it every run
+- Use that history to find the weak spots in your tests
+- Self-healing should help you find problems, not become a crutch
